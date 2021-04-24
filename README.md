@@ -41,18 +41,8 @@ cams <- st_as_sf(cams,
 # saveRDS(basemap,file=here::here("data","basemap.rds"))
  basemap <- readRDS(here::here("data","basemap.rds"))
 
-ggmap(basemap)+
-  geom_sf(data=cams, aes(color=Type),size=5, alpha=0.8,inherit.aes = FALSE)+
-  ggtitle("Connectivity Monitoring for Hwy 3 Hosmer-Alberta Project")
-```
-
-![](README_files/figure-gfm/map-1.png)<!-- -->
-
-``` r
-ggsave(here::here("plots","map_all.png"), height=7, width=7, unit="in")
-
 ##kmz
-# st_write(df%>%select(Name=`Camera Name`), "/Users/clayton.lamb/Google Drive/Documents/University/U_A/Analyses/Data/Hwycams/maps/hwycams_all.kml", driver = "kml", delete_dsn = TRUE)
+st_write(cams%>%select(Name=`Camera Name`), here::here("data", "hwycams_all.kml"), driver = "kml", delete_dsn = TRUE)
 
 
 ##drop cams not in use
@@ -74,11 +64,11 @@ ggmap(basemap)+
   ggtitle("Connectivity Monitoring for Hwy 3 Hosmer-Alberta Project")
 ```
 
-![](README_files/figure-gfm/map-2.png)<!-- -->
+![](README_files/figure-gfm/map-1.png)<!-- -->
 
 ``` r
 ggsave(here::here("plots","map_active.png"), height=7, width=7, unit="in")
 
 ##kmz
-# st_write(df%>%select(Name=`Camera Name`), "/Users/clayton.lamb/Google Drive/Documents/University/U_A/Analyses/Data/Hwycams/maps/hwycams_actve.kml", driver = "kml", delete_dsn = TRUE)
+st_write(cams_active%>%select(Name=`Camera Name`), here::here("data", "hwycams_active.kml"), driver = "kml", delete_dsn = TRUE)
 ```
