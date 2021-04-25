@@ -14,8 +14,9 @@ library(mapview)
 library(rgdal)
 library(hrbrthemes)
 library(RColorBrewer)
-library(gitignore)
 library(tidyverse)
+library(lubridate)
+library(tidylog)
 options(scipen=999)
 ##################  
 ##LOAD DATA
@@ -77,6 +78,21 @@ map
 ## Prep camera data
 
 ``` r
+##join with cam data
+df<- df%>%
+  left_join(cams%>%
+  tibble%>%
+  select(structure=`Structure Name`,location=`Camera Name`,Type, deployed=`Date Deployed`,removed=`Date Removed`)%>%
+      mutate(location=str_to_upper(location),
+             deployed=mdy_hm(deployed),
+             removed=mdy_hm(removed)),
+  by="location")%>%
+  group_by(location)%>%
+  mutate(removed=case_when(is.na(removed)~max(date_detected),
+                           TRUE~removed))
+
+
+
 df%>%
   count(common_name)
 
@@ -111,7 +127,8 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
 ```
 
 ![](README_files/figure-gfm/plot%20results-1.png)<!-- -->
@@ -133,7 +150,8 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
 ```
 
 ![](README_files/figure-gfm/plot%20results-2.png)<!-- -->
@@ -154,7 +172,8 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
 ```
 
 ![](README_files/figure-gfm/plot%20results-3.png)<!-- -->
@@ -178,7 +197,98 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
 ```
 
 ![](README_files/figure-gfm/plot%20results-4.png)<!-- -->
+
+``` r
+df_trim%>%
+  filter(!common_name%in%c("Domestic Dog","Human"))%>%
+  mutate(dur=((removed-deployed)/30)%>%as.numeric)%>%
+  group_by(location,event.id,common_name)%>%
+  summarise(n=mean(number_individuals%>%as.numeric(), na.rm=TRUE),
+            dur=mean(dur))%>%
+  group_by(location,common_name)%>%
+  summarise(n=sum(n, na.rm=TRUE),
+            dur=mean(dur),
+            hitrate=n/dur)%>%
+  ggplot(aes(x=location,y=hitrate,fill=common_name))+
+  geom_col()+
+  theme_ipsum()+
+  labs(x="Location", y="Monthly detections",
+       title="Monthly Hit rates")+
+  theme(axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(size=12, angle=45,hjust=1),
+        strip.text.x = element_text(size=15),
+        strip.text.y = element_text(size=15),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=13),
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
+```
+
+![](README_files/figure-gfm/plot%20results-5.png)<!-- -->
+
+## Compare treatment vs control
+
+``` r
+df_trim%>%
+  filter(!common_name%in%c("Domestic Dog","Human"))%>%
+  mutate(dur=((removed-deployed)/30)%>%as.numeric)%>%
+  group_by(location,event.id,common_name,Type)%>%
+  summarise(n=mean(number_individuals%>%as.numeric(), na.rm=TRUE),
+            dur=mean(dur))%>%
+  group_by(Type,common_name)%>%
+  summarise(n=sum(n, na.rm=TRUE),
+            dur=mean(dur),
+            hitrate=n/dur)%>%
+  ggplot(aes(x=Type,y=hitrate,fill=common_name))+
+  geom_col()+
+  theme_ipsum()+
+  labs(x="Location", y="Monthly detections between control and treatment sites",
+       title="Monthly Hit rates")+
+  theme(axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(size=12, angle=45,hjust=1),
+        strip.text.x = element_text(size=15),
+        strip.text.y = element_text(size=15),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=13),
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
+```
+
+![](README_files/figure-gfm/plot%20results2-1.png)<!-- -->
+
+``` r
+df_trim%>%
+filter(common_name %in% c("Bighorn sheep", "Black Bear", "Canada Lynx", "Cougar", "Coyote","Elk (wapiti)", "Grizzly bear","Moose","Red fox","White-tailed Deer","Mule deer"))%>%
+  mutate(dur=((removed-deployed)/30)%>%as.numeric)%>%
+  group_by(location,structure,event.id,common_name,Type)%>%
+  summarise(n=mean(number_individuals%>%as.numeric(), na.rm=TRUE),
+            dur=mean(dur))%>%
+  group_by(Type,structure, common_name)%>%
+  summarise(n=sum(n, na.rm=TRUE),
+            dur=mean(dur),
+            hitrate=n/dur)%>%
+  ggplot(aes(x=Type,y=hitrate,fill=common_name))+
+  facet_wrap(vars(structure), scales="free_y")+
+  geom_col()+
+  theme_ipsum()+
+  labs(x="Location", y="Monthly detections between control and treatment sites",
+       title="Monthly Hit rates")+
+  theme(axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(size=12, angle=45,hjust=1),
+        strip.text.x = element_text(size=15),
+        strip.text.y = element_text(size=15),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=13),
+        legend.title=element_text(size=15))+
+  scale_fill_brewer(palette = "Paired")
+```
+
+![](README_files/figure-gfm/plot%20results2-2.png)<!-- -->
