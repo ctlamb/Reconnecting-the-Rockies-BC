@@ -222,8 +222,7 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))+
-  scale_fill_brewer(palette = "Paired")
+        legend.title=element_text(size=15))
 ```
 
 ![](README_files/figure-gfm/plot%20results-5.png)<!-- -->
