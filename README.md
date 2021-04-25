@@ -1,7 +1,9 @@
 Reconnecting the Rockies:BC early results
 ================
 Clayton Lamb
-24 April, 2021
+25 April, 2021
+
+### DISCLAIMER: These are interim DRAFT results that are incomplete and for display, not inference at this point. The results will change as more photos are scored and highway mitigation via fencing and wildlife crossing structures are built.
 
 ## Load Packages & Data
 
@@ -85,7 +87,9 @@ df<- df%>%
   select(structure=`Structure Name`,location=`Camera Name`,Type, deployed=`Date Deployed`,removed=`Date Removed`)%>%
       mutate(location=str_to_upper(location),
              deployed=mdy_hm(deployed),
-             removed=mdy_hm(removed)),
+             removed=mdy_hm(removed),
+             Type=case_when(Type%in%"Treatment"~"Pre-Treatment",
+                            TRUE~Type)),
   by="location")%>%
   group_by(location)%>%
   mutate(removed=case_when(is.na(removed)~max(date_detected),
@@ -109,7 +113,7 @@ df_trim <- df_trim%>%
          event.id=paste(cumsum(start),common_name,location, sep="_"))
 ```
 
-\#\#plot
+## Plot
 
 ``` r
 df_trim%>%
@@ -227,7 +231,7 @@ df_trim%>%
 
 ![](README_files/figure-gfm/plot%20results-5.png)<!-- -->
 
-## Compare treatment vs control
+## Compare pre-treatment vs control
 
 ``` r
 df_trim%>%

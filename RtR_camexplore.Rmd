@@ -11,6 +11,7 @@ rmarkdown::render(here::here('RtR_camexplore.Rmd'),
                   output_file = "README.md")
 ```
 
+### DISCLAIMER: These are interim DRAFT results that are incomplete and for display, not inference at this point. The results will change as more photos are scored and highway mitigation via fencing and wildlife crossing structures are built.
 
 ## Load Packages & Data 
 ```{r Load packages and data, results='hide', message=FALSE, warning=FALSE}
@@ -90,7 +91,9 @@ df<- df%>%
   select(structure=`Structure Name`,location=`Camera Name`,Type, deployed=`Date Deployed`,removed=`Date Removed`)%>%
       mutate(location=str_to_upper(location),
              deployed=mdy_hm(deployed),
-             removed=mdy_hm(removed)),
+             removed=mdy_hm(removed),
+             Type=case_when(Type%in%"Treatment"~"Pre-Treatment",
+                            TRUE~Type)),
   by="location")%>%
   group_by(location)%>%
   mutate(removed=case_when(is.na(removed)~max(date_detected),
@@ -116,7 +119,7 @@ df_trim <- df_trim%>%
 ```
 
 
-##plot
+## Plot
 ```{r plot results, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, results='hide'}
 df_trim%>%
   group_by(common_name,location)%>%
@@ -218,7 +221,7 @@ df_trim%>%
 ```
 
 
-## Compare treatment vs control
+## Compare pre-treatment vs control
 ```{r plot results2, fig.height=7, fig.width=13, message=FALSE, warning=FALSE, results='hide'}
 
 df_trim%>%
