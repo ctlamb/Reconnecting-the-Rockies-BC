@@ -127,8 +127,7 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))+
-  scale_fill_brewer(palette = "Paired")
+        legend.title=element_text(size=15))
 ```
 
 ![](README_files/figure-gfm/plot%20results-1.png)<!-- -->
@@ -150,8 +149,7 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))+
-  scale_fill_brewer(palette = "Paired")
+        legend.title=element_text(size=15))
 ```
 
 ![](README_files/figure-gfm/plot%20results-2.png)<!-- -->
@@ -172,8 +170,7 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))+
-  scale_fill_brewer(palette = "Paired")
+        legend.title=element_text(size=15))
 ```
 
 ![](README_files/figure-gfm/plot%20results-3.png)<!-- -->
@@ -197,8 +194,7 @@ df_trim%>%
         strip.text.y = element_text(size=15),
         axis.text = element_text(size=10),
         legend.text = element_text(size=13),
-        legend.title=element_text(size=15))+
-  scale_fill_brewer(palette = "Paired")
+        legend.title=element_text(size=15))
 ```
 
 ![](README_files/figure-gfm/plot%20results-4.png)<!-- -->
@@ -236,7 +232,7 @@ df_trim%>%
 
 ``` r
 df_trim%>%
-  filter(!common_name%in%c("Domestic Dog","Human"))%>%
+filter(common_name %in% c("Bighorn sheep", "Black Bear", "Canada Lynx", "Cougar", "Coyote","Elk (wapiti)", "Grizzly bear","Moose","Red fox","White-tailed Deer","Mule deer"))%>%
   mutate(dur=((removed-deployed)/30)%>%as.numeric)%>%
   group_by(location,event.id,common_name,Type)%>%
   summarise(n=mean(number_individuals%>%as.numeric(), na.rm=TRUE),
@@ -248,8 +244,8 @@ df_trim%>%
   ggplot(aes(x=Type,y=hitrate,fill=common_name))+
   geom_col()+
   theme_ipsum()+
-  labs(x="Location", y="Monthly detections between control and treatment sites",
-       title="Monthly Hit rates")+
+  labs(x="Location", y="Monthly detections",
+       title="Monthly detections between control and treatment sites")+
   theme(axis.title.y = element_text(size=15),
         axis.title.x = element_text(size=15),
         axis.text.x = element_text(size=12, angle=45,hjust=1),
@@ -278,8 +274,8 @@ filter(common_name %in% c("Bighorn sheep", "Black Bear", "Canada Lynx", "Cougar"
   facet_wrap(vars(structure), scales="free_y")+
   geom_col()+
   theme_ipsum()+
-  labs(x="Location", y="Monthly detections between control and treatment sites",
-       title="Monthly Hit rates")+
+  labs(x="Location", y="Monthly detections",
+       title="Monthly detections between control and treatment sites")+
   theme(axis.title.y = element_text(size=15),
         axis.title.x = element_text(size=15),
         axis.text.x = element_text(size=12, angle=45,hjust=1),
