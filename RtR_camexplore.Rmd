@@ -35,7 +35,7 @@ options(scipen=999)
 cams <- read_csv(here::here("data","Camera Deployment.csv"))
 
 ##scored photos
-df <- read_csv(here::here("data","Highway_3_Wildlife_Collision_Reduction_2020_WILDTRAX_REPORT.csv"))
+df <- read_csv(here::here("data","LER_Highway_3_Wildlife_Collision_Reduction_2020_report.csv"))
 ```
 
 ## Map of cams
@@ -100,22 +100,45 @@ df<- df%>%
                            TRUE~removed))
 
 
-
-df%>%
-  count(common_name)
-
 df_trim <- df%>%
   filter(common_name %in% c("Bighorn sheep", "Black Bear", "Canada Lynx", "Cougar", "Coyote","Domestic Dog","Elk (wapiti)", "Grizzly bear","Human","Moose","Red fox","River Otter", "mink","Striped Skunk","Vehicle","White-tailed Deer","Mule deer"))
+
+df_trim %>%
+  ungroup%>%
+  count(common_name)
 
 
 ##identify distinct events
 df_trim <- df_trim%>%
   group_by(location,common_name)%>%
   arrange(date_detected)%>%
-  mutate(timedif=c(0.1,diff(date_detected))/60,
+  mutate(timedif=difftime(date_detected, lag(date_detected), 
+         units = c("mins"))%>%as.numeric,
+         timedif=case_when(is.na(timedif)~60,TRUE~timedif),
          start = timedif > 20,
-         event.id=paste(cumsum(start),common_name,location, sep="_"))
+         event.id=paste(cumsum(start),common_name,location, sep="_"),
+         spec.loc.id=paste(common_name,location, sep="_"))
 
+
+
+##remove duplicate detection at crossing sites
+##ID duplicates
+dups <- df_trim%>%
+  ungroup%>%
+  filter(Type%in%"Pre-Treatment")%>%
+  group_by(event.id,location,Type, common_name,structure)%>%
+  summarise(meantime=mean(date_detected))%>%
+  ungroup()%>%
+  group_by(structure,Type,common_name)%>%
+    arrange(meantime)%>%
+  mutate(timedif=difftime(meantime, lag(meantime), 
+         units = c("mins"))%>%as.numeric,
+         timedif=case_when(is.na(timedif)~60,TRUE~timedif))%>%
+  filter(timedif<5)
+
+##remove dups
+df_trim <- df_trim%>%
+  filter(!event.id%in%dups$event.id)
 ```
 
 
